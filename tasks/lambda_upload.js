@@ -75,14 +75,14 @@ module.exports = function (grunt) {
         MemorySize: options.memorySize,
         Timeout: options.timeout
       };
-      // upload lambda
-      // lambda.uploadFunctionAsync(params).then(function(data) {
-      //   grunt.log.ok('Package deployed "' + data.FunctionName + '" at ' + data.LastModified + '.');
-      //   done(true);
-      // }).catch(function(err) {
-      //   grunt.log.error(err.message);
-      //   done(false);
-      // });
+      upload lambda
+      lambda.uploadFunctionAsync(params).then(function(data) {
+        grunt.log.ok('Package deployed "' + data.FunctionName + '" at ' + data.LastModified + '.');
+        done(true);
+      }).catch(function(err) {
+        grunt.log.error(err.message);
+        done(false);
+      });
     });
 
   });
