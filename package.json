@@ -1,6 +1,6 @@
 {
   "name": "grunt-lambda-upload",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Upload AWS Lambda functions",
   "main": "task/lambda_upload.js",
   "scripts": {
