@@ -79,6 +79,7 @@ grunt.initConfig({
     debug: {
       options: {
         url: 'https://github.com/k-kinzal/lambda-dummy-function/archive/0.0.1.zip',
+        configFileName: 'local.json',
         config: {
           // set config to config/local.json
         }
