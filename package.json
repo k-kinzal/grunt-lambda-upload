@@ -26,12 +26,12 @@
   "homepage": "https://github.com/k-kinzal/grunt-lambda-upload",
   "devDependencies": {
     "grunt": "^0.4.5",
-    "grunt-contrib-jshint": "^0.11.0",
-    "jshint-stylish": "^1.0.0"
+    "grunt-contrib-jshint": "^0.11.1",
+    "jshint-stylish": "^1.0.1"
   },
   "dependencies": {
-    "aws-sdk": "^2.1.7",
-    "bluebird": "^2.9.1",
+    "aws-sdk": "^2.1.21",
+    "bluebird": "^2.9.24",
     "jszip": "^2.5.0",
     "node-fetch": "^1.0.6"
   }
