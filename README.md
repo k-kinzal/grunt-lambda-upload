@@ -44,11 +44,7 @@ grunt.initConfig({
       runtime: 'nodejs',
       description: 'test function',
       memorySize: 128,
-      timeout: 3,
-      credentials: {
-        profile: null,
-        region: 'us-east-1'
-      }
+      timeout: 3
     },
     debug: {
       options: {
@@ -60,6 +56,33 @@ grunt.initConfig({
           'config/default.json'
         ])
       }]
+    }
+  },
+})
+```
+
+Or config of load remote package.
+
+```js
+grunt.initConfig({
+  lambda_upload: {
+    options: {
+      functionName: 'functionname',
+      handler: 'src/index.handler', // modules.handler in /src/index.js
+      mode: 'event',
+      role: 'arn:aws:iam::125043710018:role/lambda_exec_role', // IAM role for execute lambda function
+      runtime: 'nodejs',
+      description: 'test function',
+      memorySize: 128,
+      timeout: 3
+    },
+    debug: {
+      options: {
+        url: 'https://github.com/k-kinzal/lambda-dummy-function/archive/0.0.1.zip',
+        config: {
+          // set config to config/local.json
+        }
+      }
     }
   },
 })

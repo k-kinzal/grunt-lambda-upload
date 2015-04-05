@@ -1,15 +1,11 @@
 'use strict';
 // require
-var Promise = require('bluebird');
 var AWS     = require('aws-sdk');
-var Lambda  = AWS.Lambda;
-var _       = require('lodash');
-var archive = require('archiver');
-var fs      = require('fs-extra');
-var path    = require('path');
-var tmp     = require('temporary');
-
-var lambda  = Promise.promisifyAll(new Lambda());
+var JSZip   = require('jszip');
+var Promise = require('bluebird');
+var fetch   = require('node-fetch');
+var fs      = require('fs');
+var lambda  = Promise.promisifyAll(new AWS.Lambda());
 /*
  * grunt-lambda-upload
  * https://github.com/k-kinzal/grunt-lambda-upload
@@ -23,50 +19,43 @@ module.exports = function (grunt) {
     // initialize
     var done    = this.async();
     var options = this.options();
-    var packagePath = dir + '/' + options.functionName + _.now() + '.zip';
-    // generate config
-    var currentPath = path.resolve('.');
-    var files = this.filesSrc;
-    var config = options.config;
-    if (!!config && options.configFileName) {
-      var dir = currentPath = (new tmp.Dir()).path;
-      // copy to temporary directory
-      files.forEach(function(fromPath, index) {
-        var toPath = dir + '/' + fromPath;
-        var toDir  = path.dirname(toPath);
-        if (!fs.existsSync(toDir)) {
-          fs.ensureDir(toDir);
-        }
-        fs.copySync(fromPath, toPath);
+    var files   = this.filesSrc;
+    var promise = Promise.resolve(new JSZip());
+
+    // load file
+    if (!!options.url) {
+      // archive from remote packages
+      promise = promise.then(function(zip) {
+        var _response;
+        return fetch(options.url).then(function(response) {
+          _response = response;
+          return response.text();
+        }).then(function(text) {
+          return zip.load(_response._raw[0]);
+        });
       });
-      // generate config
-      if (fs.existsSync('config')) {
-        if (!fs.existsSync(dir + '/config')) {
-          fs.ensureDir(dir + '/config');
-        }
-        fs.writeFile(dir + '/config/' + options.configFileName, JSON.stringify(config));
-        files.push('config/' + options.configFileName);
-      }
+    } else {
+      // archive from local file
+      promise = promise.then(function(zip) {
+        files.forEach(function(filePath) {
+          zip.file(filePath, fs.readFileSync(filePath));
+        });
+        return zip;
+      });
     }
-    // create temporary directory
-    grunt.file.mkdir(path.dirname(packagePath));
-    // package
-    var output = fs.createWriteStream(packagePath);
-    var zip = archive('zip');
-    console.log(currentPath);
-    zip.pipe(output);
-    zip.bulk([{
-      src: files,
-      expand: true,
-      cwd: currentPath
-    }]);
-    zip.finalize();
-    // packaged event
-    output.on('close', function() {
+    // add config file to archive
+    if (!!options.config && !!options.configFileName) {
+      promise = promise.then(function(zip) {
+        zip.folder('config').file(options.configFileName, JSON.stringify(options.config));
+        return zip;
+      });
+    }
+    // upload Lambda Function
+    promise.then(function(zip) {
       // create parameter
       var params = {
         FunctionName: options.functionName,
-        FunctionZip: fs.readFileSync(packagePath),
+        FunctionZip: zip.generate({type:"nodebuffer"}),
         Handler: options.handler,
         Mode: options.mode,
         Role: options.role,
@@ -75,14 +64,16 @@ module.exports = function (grunt) {
         MemorySize: options.memorySize,
         Timeout: options.timeout
       };
-      upload lambda
-      lambda.uploadFunctionAsync(params).then(function(data) {
-        grunt.log.ok('Package deployed "' + data.FunctionName + '" at ' + data.LastModified + '.');
-        done(true);
-      }).catch(function(err) {
-        grunt.log.error(err.message);
-        done(false);
-      });
+      return lambda.uploadFunctionAsync(params);
+
+    }).then(function(data) {
+      grunt.log.ok('Package deployed "' + data.FunctionName + '" at ' + data.LastModified + '.');
+      done(true);
+
+    }).catch(function(err) {
+      grunt.log.error(err.message);
+      done(false);
+
     });
 
   });
