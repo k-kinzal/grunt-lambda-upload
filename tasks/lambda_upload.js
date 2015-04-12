@@ -5,14 +5,9 @@ var JSZip   = require('jszip');
 var Promise = require('bluebird');
 var fetch   = require('node-fetch');
 var fs      = require('fs');
-var lambda  = Promise.promisifyAll(new AWS.Lambda());
-/*
- * grunt-lambda-upload
- * https://github.com/k-kinzal/grunt-lambda-upload
- *
- * Copyright (c) 2012-2015 k-kinzal
- * Licensed under the MIT license.
- */
+var lambda  = Promise.promisifyAll(new AWS.Lambda(), 'Promise');
+
+
 module.exports = function (grunt) {
   // register tasks
   grunt.registerMultiTask('lambda_upload', 'Upload AWS Lambda functions.', function () {
@@ -64,7 +59,7 @@ module.exports = function (grunt) {
         MemorySize: options.memorySize,
         Timeout: options.timeout
       };
-      return lambda.uploadFunctionAsync(params);
+      return lambda.uploadFunctionPromise(params);
 
     }).then(function(data) {
       grunt.log.ok('Package deployed "' + data.FunctionName + '" at ' + data.LastModified + '.');
