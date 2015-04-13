@@ -33,7 +33,9 @@ module.exports = function (grunt) {
       // archive from local file
       promise = promise.then(function(zip) {
         files.forEach(function(filePath) {
-          zip.file(filePath, fs.readFileSync(filePath));
+          if (!grunt.file.isDir(filePath)) {
+            zip.file(filePath, fs.readFileSync(filePath));
+          }
         });
         return zip;
       });
@@ -66,7 +68,7 @@ module.exports = function (grunt) {
       done(true);
 
     }).catch(function(err) {
-      grunt.log.error(err.message);
+      grunt.log.error(err);
       done(false);
 
     });
