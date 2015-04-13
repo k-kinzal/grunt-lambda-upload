@@ -5,7 +5,7 @@ var JSZip   = require('jszip');
 var Promise = require('bluebird');
 var fetch   = require('node-fetch');
 var fs      = require('fs');
-var lambda  = Promise.promisifyAll(new AWS.Lambda(), 'Promise');
+var lambda  = Promise.promisifyAll(new AWS.Lambda(), {suffix: 'Promise'});
 
 
 module.exports = function (grunt) {
