@@ -19,10 +19,11 @@ module.exports = function (grunt) {
 
     // load file
     if (!!options.url) {
+      var url = options.url; delete(options.url);
       // archive from remote packages
       promise = promise.then(function(zip) {
         var _response;
-        return fetch(options.url).then(function(response) {
+        return fetch(url).then(function(response) {
           _response = response;
           return response.text();
         }).then(function(text) {
@@ -42,8 +43,10 @@ module.exports = function (grunt) {
     }
     // add config file to archive
     if (!!options.config && !!options.configFileName) {
+      var config = options.config; delete(options.config);
+      var configFileName = options.configFileName; delete(options.configFileName);
       promise = promise.then(function(zip) {
-        zip.folder('config').file(options.configFileName, JSON.stringify(options.config));
+        zip.folder('config').file(configFileName, JSON.stringify(config));
         return zip;
       });
     }
@@ -51,17 +54,15 @@ module.exports = function (grunt) {
     promise.then(function(zip) {
       // create parameter
       var params = {
-        FunctionName: options.functionName,
-        FunctionZip: zip.generate({type:"nodebuffer"}),
-        Handler: options.handler,
-        Mode: options.mode,
-        Role: options.role,
-        Runtime: options.runtime,
-        Description: options.description,
-        MemorySize: options.memorySize,
-        Timeout: options.timeout
+        Code: {
+          ZipFile: zip.generate({type:"nodebuffer"})
+        }
       };
-      return lambda.uploadFunctionPromise(params);
+      Object.keys(options).forEach(function(key) {
+        params[key.charAt(0).toUpperCase() + key.slice(1)] = options[key];
+      });
+
+      return lambda.createFunctionPromise(params);
 
     }).then(function(data) {
       grunt.log.ok('Package deployed "' + data.FunctionName + '" at ' + data.LastModified + '.');

@@ -39,7 +39,6 @@ grunt.initConfig({
     options: {
       functionName: 'functionname',
       handler: 'src/index.handler', // modules.handler in /src/index.js
-      mode: 'event',
       role: 'arn:aws:iam::125043710018:role/lambda_exec_role', // IAM role for execute lambda function
       runtime: 'nodejs',
       description: 'test function',
