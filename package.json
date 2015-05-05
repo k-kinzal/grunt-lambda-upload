@@ -4,7 +4,7 @@
   "description": "Upload AWS Lambda functions",
   "main": "task/lambda_upload.js",
   "scripts": {
-    "test": "grunt test"
+    "test": "flow check && mocha --require intelli-espower-loader test/unit/**/*.spec.js"
   },
   "repository": {
     "type": "git",
@@ -25,14 +25,26 @@
   },
   "homepage": "https://github.com/k-kinzal/grunt-lambda-upload",
   "devDependencies": {
+    "espower-loader": "^0.10.0",
     "grunt": "^0.4.5",
     "grunt-contrib-jshint": "^0.11.1",
-    "jshint-stylish": "^1.0.1"
+    "intelli-espower-loader": "^0.6.0",
+    "jshint-stylish": "^1.0.1",
+    "mocha": "^2.2.4",
+    "power-assert": "^0.11.0",
+    "promise-test-helper": "^0.2.1",
+    "proxyquire": "^1.4.0",
+    "sinon": "^1.14.1"
   },
   "dependencies": {
-    "aws-sdk": "^2.1.21",
+    "aws-sdk": "^2.1.26",
+    "baconjs": "^0.7.53",
     "bluebird": "^2.9.24",
     "jszip": "^2.5.0",
-    "node-fetch": "^1.0.6"
+    "lodash": "^3.8.0",
+    "node-clone": "^0.1.1",
+    "node-fetch": "^1.0.6",
+    "path": "^0.11.14",
+    "values": "^0.2.0"
   }
 }
