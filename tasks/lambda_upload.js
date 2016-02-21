@@ -1,25 +1,28 @@
 'use strict';
 // require
-var AWS     = require('aws-sdk');
-var JSZip   = require('jszip');
+var AWS = require('aws-sdk');
+var JSZip = require('jszip');
 var Promise = require('bluebird');
-var fetch   = require('node-fetch');
-var fs      = require('fs');
-var lambda  = Promise.promisifyAll(new AWS.Lambda(), {suffix: 'Promise'});
+var fetch = require('node-fetch');
+var fs = require('fs');
+var lambda = Promise.promisifyAll(new AWS.Lambda(), {
+  suffix: 'Promise'
+});
 
 
-module.exports = function (grunt) {
+module.exports = function(grunt) {
   // register tasks
-  grunt.registerMultiTask('lambda_upload', 'Upload AWS Lambda functions.', function () {
+  grunt.registerMultiTask('lambda_upload', 'Upload AWS Lambda functions.', function() {
     // initialize
-    var done    = this.async();
+    var done = this.async();
     var options = this.options();
-    var files   = this.filesSrc;
+    var files = this.filesSrc;
     var promise = Promise.resolve(new JSZip());
 
     // load file
     if (!!options.url) {
-      var url = options.url; delete(options.url);
+      var url = options.url;
+      delete(options.url);
       // archive from remote packages
       promise = promise.then(function(zip) {
         var _response;
@@ -43,8 +46,10 @@ module.exports = function (grunt) {
     }
     // add config file to archive
     if (!!options.config && !!options.configFileName) {
-      var config = options.config; delete(options.config);
-      var configFileName = options.configFileName; delete(options.configFileName);
+      var config = options.config;
+      delete(options.config);
+      var configFileName = options.configFileName;
+      delete(options.configFileName);
       promise = promise.then(function(zip) {
         zip.folder('config').file(configFileName, JSON.stringify(config));
         return zip;
@@ -55,14 +60,23 @@ module.exports = function (grunt) {
       // create parameter
       var params = {
         Code: {
-          ZipFile: zip.generate({type:"nodebuffer"})
+          ZipFile: zip.generate({
+            type: "nodebuffer"
+          })
         }
       };
       Object.keys(options).forEach(function(key) {
         params[key.charAt(0).toUpperCase() + key.slice(1)] = options[key];
       });
 
-      return lambda.createFunctionPromise(params);
+      if (!!options.update){
+        return lambda.createFunctionPromise(params);
+      } else {
+        var params2 = params.Code;
+        params2.FunctionName = params.FunctionName;
+        params2.Publish = true;
+        return lambda.updateFunctionCodePromise(params2);
+      }
 
     }).then(function(data) {
       grunt.log.ok('Package deployed "' + data.FunctionName + '" at ' + data.LastModified + '.');
